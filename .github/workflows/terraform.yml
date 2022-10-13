@@ -1,6 +1,7 @@
 name: 'Pull Request'
 permissions:
   id-token: write
+  contents: read
  
 # The workflow should only trigger on pull requests to the main branch
 on:
