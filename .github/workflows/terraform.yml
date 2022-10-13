@@ -7,13 +7,8 @@ on:
       - main
 name: 'Terraform'
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   terraform:
