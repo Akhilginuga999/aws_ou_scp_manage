@@ -34,9 +34,6 @@ jobs:
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
       run: terraform init
-
-    - name: Checkout
-        uses: actions/checkout@v3
  
     - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -44,7 +41,7 @@ jobs:
           aws-region: eu-west-1
           role-to-assume: ${{ secrets.AWS_ROOT_OIDC_ROLE }}
           role-session-name: OIDCSession
-          
+
     # Checks that all Terraform configuration files adhere to a canonical format
     - name: Terraform Format
       run: terraform fmt -check
