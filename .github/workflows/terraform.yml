@@ -38,8 +38,8 @@ jobs:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-region: eu-east-1
-        role-to-assume: ${{ secrets.AWS_ROOT_OIDC_ROLE }}
+        aws-region: us-east-1
+        role-to-assume: "${{ secrets.AWS_ROOT_OIDC_ROLE }}"
         role-session-name: OIDCSession
 
     # Checks that all Terraform configuration files adhere to a canonical format
