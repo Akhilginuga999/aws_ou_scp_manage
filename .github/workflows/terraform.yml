@@ -1,16 +1,15 @@
 name: 'Pull Request'
+permissions:
+  id-token: write
  
 # The workflow should only trigger on pull requests to the main branch
 on:
   pull_request:
     branches:
       - main
-name: 'Terraform'
-
-permissions:
-  contents: write
-
+  workflow_dispatch:
 jobs:
+
   terraform:
     name: 'Terraform'
     runs-on: ubuntu-latest
@@ -35,60 +34,17 @@ jobs:
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
       run: terraform init
- 
-# Required to get the ID Token that will be used for OIDC
-permissions:
-  id-token: write
-jobs:
-  read-dev:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
+
+    - name: Checkout
         uses: actions/checkout@v3
  
-      - name: Configure AWS Credentials
+    - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: eu-west-1
           role-to-assume: ${{ secrets.AWS_ROOT_OIDC_ROLE }}
           role-session-name: OIDCSession
-
-name: 'Terraform'
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-
-permissions:
-  contents: read
-
-jobs:
-  terraform:
-    name: 'Terraform'
-    runs-on: ubuntu-latest
-    environment: production
-
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
-    defaults:
-      run:
-        shell: bash
-
-    steps:
-    # Checkout the repository to the GitHub Actions runner
-    - name: Checkout
-      uses: actions/checkout@v3
-
-    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
-      with:
-        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
-    - name: Terraform Init
-      run: terraform init
-
+          
     # Checks that all Terraform configuration files adhere to a canonical format
     - name: Terraform Format
       run: terraform fmt -check
