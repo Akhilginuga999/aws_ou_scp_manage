@@ -45,7 +45,7 @@ jobs:
         run: |
           wget -O ./hcl2json https://github.com/tmccombs/hcl2json/releases/download/v0.3.4/hcl2json_linux_amd64 -q
           chmod 755 ./hcl2json
-  jobs:
+   jobs:
 
     terraform:
     name: 'Terraform'
