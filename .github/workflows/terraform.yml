@@ -1,14 +1,52 @@
-name: 'Pull Request'
+name: "Run OPA with conftest"
 permissions:
-  id-token: write
-  contents: read
- 
-# The workflow should only trigger on pull requests to the main branch
+  id-token: write # required to use OIDC authentication
+  contents: read # required to check out the code from the repo
+  pull-requests: write # allow GH Action to write in the PR
+
+# Pipeline must run only changes/addition to terraform files and PR to main branch
 on:
   pull_request:
+    paths:
+      - "**.tf"
     branches:
       - main
-  workflow_dispatch:
+
+jobs:
+  inform_about_tests:
+    name: Conftest notification
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Inform on OPA testing
+        id: inform_pr
+        uses: marocchino/sticky-pull-request-comment@v2.1.0
+        with:
+          header: Will Run OPA/Conftest
+          message: |
+            ***Running conftest test on ${{ github.sha }}***
+            ***Tests are located in /policy***
+            Results will display below momentarily...
+            If test pass merging will be allowed.
+            If they do not pass you will need to resolve the issue and commit it back.
+            Documentation: TBA
+
+  runs-conftest:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Conftest
+        id: setup_conftest
+        uses: princespaghetti/setup-conftest@v1
+        with:
+          version: 0.32.x
+
+      - name: Setup hcl2json
+        run: |
+          wget -O ./hcl2json https://github.com/tmccombs/hcl2json/releases/download/v0.3.4/hcl2json_linux_amd64 -q
+          chmod 755 ./hcl2json
 jobs:
 
   terraform:
@@ -41,13 +79,40 @@ jobs:
       with:
         aws-region: us-east-1
         role-to-assume: "${{ secrets.AWS_ROOT_OIDC_ROLE }}"
-        
+
         role-session-name: OIDCSession
+    - name: Get changed files
+      id: changed_files
+      uses: tj-actions/changed-files@v23
+      with:
+        files: |
+          **/*.tf
 
     # Checks that all Terraform configuration files adhere to a canonical format
     - name: Terraform Format
       run: terraform fmt -check
-
+      continue-on-error: true
+     - name: Convert hcl2json and test with conftest
+        id: conv_test
+        continue-on-error: true
+        env:
+          CONFTESTLOG_FILE: conftest.log
+      run: |
+          echo "-----" >> $CONFTESTLOG_FILE
+          for file in ${{ steps.changed_files.outputs.all_changed_files }}; do
+            echo "$file submited for testing"
+            echo "Testing file $file" >> $CONFTESTLOG_FILE
+            echo "Converting $file to json with hcl2json"
+            ./hcl2json $file > $file.json
+            echo "Running conftest test --no-color --no-fail --all-namespaces --policy policies/ $file.json"
+            conftest test --no-color --no-fail --all-namespaces --data $CC_DATA_FILE --data $SSOAA_DATA_FILE --data $OU_NAME_ID --policy policies/ $file.json | tee -a $CONFTESTLOG_FILE
+            echo "-----" >> $CONFTESTLOG_FILE
+          done
+          RESULT="$(cat $CONFTESTLOG_FILE)"
+          echo "::set-output name=conftestlog::$RESULT"
+          echo "RESULT<<EOF" >> $GITHUB_ENV
+          echo "$RESULT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
     # Generates an execution plan for Terraform
     - name: Terraform Plan
       run: terraform plan -input=false
