@@ -41,6 +41,7 @@ jobs:
       with:
         aws-region: us-east-1
         role-to-assume: "${{ secrets.AWS_ROOT_OIDC_ROLE }}"
+        
         role-session-name: OIDCSession
 
     # Checks that all Terraform configuration files adhere to a canonical format
