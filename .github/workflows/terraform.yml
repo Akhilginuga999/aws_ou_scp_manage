@@ -10,7 +10,7 @@ on:
     branches:
       - main
 
-jobs:
+ jobs:
   inform_about_tests:
     name: Conftest notification
     runs-on: ubuntu-22.04
@@ -45,10 +45,9 @@ jobs:
         run: |
           wget -O ./hcl2json https://github.com/tmccombs/hcl2json/releases/download/v0.3.4/hcl2json_linux_amd64 -q
           chmod 755 ./hcl2json
-   jobs:
 
     terraform:
-    name: 'Terraform'
+      - name: 'Terraform'
     runs-on: ubuntu-latest
     environment: production
 
