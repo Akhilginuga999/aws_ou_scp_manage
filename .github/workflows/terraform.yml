@@ -47,9 +47,9 @@ jobs:
         run: |
           wget -O ./hcl2json https://github.com/tmccombs/hcl2json/releases/download/v0.3.4/hcl2json_linux_amd64 -q
           chmod 755 ./hcl2json
-jobs:
+  jobs:
 
-  terraform:
+    terraform:
     name: 'Terraform'
     runs-on: ubuntu-latest
     environment: production
@@ -92,10 +92,10 @@ jobs:
     - name: Terraform Format
       run: terraform fmt -check
       continue-on-error: true
-     - name: Convert hcl2json and test with conftest
-        id: conv_test
-        continue-on-error: true
-        env:
+    - name: Convert hcl2json and test with conftest
+      id: conv_test
+      continue-on-error: true
+      env:
           CONFTESTLOG_FILE: conftest.log
       run: |
           echo "-----" >> $CONFTESTLOG_FILE
