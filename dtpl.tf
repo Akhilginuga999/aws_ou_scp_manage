@@ -1,5 +1,5 @@
 module "dtpl" {
-  source = "./aws_ou_scp_manage"
+  source = "./aws_ou_scp_manage/dtpl.tf"
  
   control_tower_parameters = {
     AccountEmail              = "sre+dtpl-core-customer-profile-intg@flutterint.com"
