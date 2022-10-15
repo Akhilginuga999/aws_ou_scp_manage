@@ -1,4 +1,4 @@
-module "dtpl-core-customer-profile-intg" {
+module "dtpl" {
   source = "./modules/aws_ou_scp_manage"
  
   control_tower_parameters = {
