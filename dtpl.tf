@@ -1,5 +1,5 @@
-module "dtpl-core-customer-profile-intg" {
-  source = "./modules/aft-account-request"
+module "dtpl" {
+
 
   control_tower_parameters = {
     AccountEmail              = "sre+dtpl-core-customer-profile-intg@flutterint.com"
