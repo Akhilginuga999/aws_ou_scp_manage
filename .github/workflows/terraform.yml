@@ -45,7 +45,7 @@ jobs:
           wget -O ./hcl2json https://github.com/tmccombs/hcl2json/releases/download/v0.3.4/hcl2json_linux_amd64 -q
           chmod 755 ./hcl2json
 
-    terraform:
+  terraform:
       - name: 'Terraform'
     # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
       - name: Setup Terraform
