@@ -1,4 +1,4 @@
-module "dtpl" {
+module dtpl {
 
 
   control_tower_parameters = {
