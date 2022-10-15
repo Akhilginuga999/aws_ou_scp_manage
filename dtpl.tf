@@ -1,5 +1,5 @@
 
- module {   
+ module "file" {   
   control_tower_parameters = {
     AccountEmail              = "sre+dtpl-core-customer-profile-intg@flutterint.com"
     AccountName               = "dtpl-core-customer-profile-intg"
