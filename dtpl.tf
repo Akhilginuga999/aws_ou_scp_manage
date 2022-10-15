@@ -1,5 +1,3 @@
-module dtpl {
-
 
   control_tower_parameters = {
     AccountEmail              = "sre+dtpl-core-customer-profile-intg@flutterint.com"
@@ -35,5 +33,5 @@ module dtpl {
     group2 = "testgroup2"
   }
 
-  account_customizations_name = "dtpl-nonprod"
-}
+  #account_customizations_name = "dtpl-nonprod"
+
