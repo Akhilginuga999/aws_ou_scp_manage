@@ -1,4 +1,4 @@
-module "dtpl-core-customer-profile-intg" {
+{
 
   control_tower_parameters = {
     AccountEmail              = "sre+dtpl-core-customer-profile-intg@flutterint.com"

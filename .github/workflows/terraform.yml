@@ -60,11 +60,34 @@ jobs:
               aws-region: us-east-1
               role-to-assume: "${{ secrets.AWS_ROOT_OIDC_ROLE }}"
               role-session-name: OIDCSession
+           - name: Get changed files
+        id: changed_files
+        uses: tj-actions/changed-files@v23
+        with:
+          files: |
+            **/*.tf
+          files_ignore: |
+            **/*.yml
+            **/*.yaml
+            **/*.md
+            examples/sandbox_account_01.tf
 
-    # Checks that all Terraform configuration files adhere to a canonical format
       - name: Terraform Format
-        run: terraform fmt -check
-
+        id: fmt
+        continue-on-error: true
+        run: |
+          for file in ${{ steps.changed_files.outputs.all_changed_files }}; do
+            terraform fmt -check -diff -no-color $file >> fmt.log
+          done
+          cat fmt.log
+          ls -la fmt.log
+          if [[ ! -s fmt.log ]]; then
+            REPORT="Format is correct"
+          else
+            REPORT="$(cat fmt.log)"
+          fi
+          echo $REPORT
+          echo "::set-output name=logfmt::$REPORT"
     # Generates an execution plan for Terraform
       - name: Terraform Plan
         run: terraform plan -input=false
