@@ -11,12 +11,12 @@ module "dtpl-core-customer-profile-intg" {
   }
 
   account_tags = {
-    "OwnerName"   = "Kaloyan&&Kosev"
-    "OwnerEmail"  = "kaloyanko&&evpokerstarsint.com"
+    "OwnerName"   = "KaloyanKosev"
+    "OwnerEmail"  = "kaloyankoevpokerstarsint.com"
     "Division"    = "ENT"
-    "Environment" = "in&&tg"
+    "Environment" = "intg"
     "CostCenter"  = "80716"
-    "Project"     = "DTP&&L"
+    "Project"     = "DTPL"
     "JiraRequest" = "CCOE539"
   }
 
