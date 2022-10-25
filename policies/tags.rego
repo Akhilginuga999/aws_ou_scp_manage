@@ -52,8 +52,8 @@ deny[reason] {
 
 deny[reason] {
   some account in input.module[_]
-       tags := account.account_tags[_] 
+       tags := account.account_tags. 
        r := "[A-Za-z0-9 _.:=+@-`]"
       not regex.match(r, tags)
-  reason := "not a vaild tag name."
+  reason := "not a vaild tag name.OwnerEmail"
 }
