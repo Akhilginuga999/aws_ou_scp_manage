@@ -43,3 +43,9 @@ deny[reason] {
   not account.account_tags.OwnerName
   reason := "The OwnerName tag is not set for the account."
 }
+deny[reason] {
+  some account in input.module[_]
+  some key, val in account.account_tags
+  not regex.match("^[A-Za-z0-9 _.:/=+@-`]+$", val)
+  reason := sprintf("not a vaild tag name")
+}

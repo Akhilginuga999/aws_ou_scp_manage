@@ -11,8 +11,8 @@ module "dtpl-core-customer-profile-intg" {
   }
 
   account_tags = {
-    #"OwnerName"   = "Kaloyan Kosev"
-    "OwnerEmail"  = "kaloyan_kosev@pokerstarsint.com"
+    "OwnerName"   = "Kaloyan Kosev"
+    "OwnerEmail"  = "kaloyan_kosev&pokerstarsint.com"
     "Division"    = "ENT"
     "Environment" = "intg"
     "CostCenter"  = "80716"
