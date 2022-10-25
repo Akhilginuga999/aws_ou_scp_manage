@@ -12,8 +12,8 @@ module "dtpl-core-customer-profile-intg" {
 
   account_tags = {
     "OwnerName"   = "Kaloyan Kosev"
-    "OwnerEmail"  = "kaloyankosevpokerstarsint.com"
-    "Division"    = "ENT"
+    "OwnerEmail"  = "kaloyankos&&evpokerstarsint.com"
+    "Division"    = "ENT!!"
     "Environment" = "intg"
     "CostCenter"  = "80716"
     "Project"     = "DTPL"
