@@ -2,7 +2,7 @@ module "dtpl-core-customer-profile-intg" {
   source = "./modules/aft-account-request"
 
   control_tower_parameters = {
-    AccountEmail              = "dtpl-core-customer-profile-intg@flutterint.com"
+    AccountEmail              = "sre+dtpl-core-customer-profile-intg@flutterint.com"
     AccountName               = "dtpl-core-customer-profile-intg"
     ManagedOrganizationalUnit = "DTPL (ou-t7v1-di0eztm2)"
     SSOUserEmail              = "dtpl-core-customer-profile-intg@flutterint.com"
@@ -11,7 +11,7 @@ module "dtpl-core-customer-profile-intg" {
   }
 
   account_tags = {
-    "OwnerName"   = "Kaloyan Kosev"
+    #"OwnerName"   = "Kaloyan Kosev"
     "OwnerEmail"  = "kaloyan_kosev@pokerstarsint.com"
     "Division"    = "ENT"
     "Environment" = "intg"

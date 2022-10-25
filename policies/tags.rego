@@ -37,3 +37,9 @@ deny[reason] {
   reason := "The change_management_parameters.change_requested_by tag is not set. We want to capture reason for account request and who initiated the request."
 
 }
+
+deny[reason] {
+  some account in input.module[_]
+  not account.account_tags.OwnerName
+  reason := "The OwnerName tag is not set for the account."
+}
