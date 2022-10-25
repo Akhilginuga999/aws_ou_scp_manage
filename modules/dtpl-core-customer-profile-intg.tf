@@ -12,17 +12,12 @@ module "dtpl-core-customer-profile-intg" {
 
   account_tags = {
     "OwnerName"   = "Kaloyan Kosev"
-    "OwnerEmail"  = "kaloyan_kosevpokerstarsint.com"
+    "OwnerEmail"  = "kaloyankosevpokerstarsint.com"
     "Division"    = "ENT"
     "Environment" = "intg"
     "CostCenter"  = "80716"
     "Project"     = "DTPL"
-    "JiraRequest" = "CCOE-539"
-
-    "SSOAA:tsg_aws_dtpl_platform_services_admins" = "AWSReadOnlyAccess"
-    "SSOAA:tsg_aws_DTPL_DevOps"                   = "AWSReadOnlyAccess"
-    "SSOAA:tsg_aws_dtpl_Data_Tech_Engineering"    = "AWSReadOnlyAccess"
-    "SSOAA:tsg_aws_DTPL_Architects"               = "AWSReadOnlyAccess"
+    "JiraRequest" = "CCOE539"
   }
 
   change_management_parameters = {
