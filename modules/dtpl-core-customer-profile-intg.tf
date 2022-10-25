@@ -12,7 +12,7 @@ module "dtpl-core-customer-profile-intg" {
 
   account_tags = {
     "OwnerName"   = "Kaloyan Kosev"
-    "OwnerEmail"  = "kaloyankoe&&&vpokerstarsint.com"
+    "OwnerEmail"  = "kaloyankoevpokerstarsint.com"
     "Division"    = "ENT"
     "Environment" = "intg"
     "CostCenter"  = "80716"
