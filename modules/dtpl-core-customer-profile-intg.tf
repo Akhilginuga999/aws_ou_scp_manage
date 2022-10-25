@@ -2,7 +2,7 @@ module "dtpl-core-customer-profile-intg" {
   source = "./modules/aft-account-request"
 
   control_tower_parameters = {
-    AccountEmail              = "sre+dtpl-core-customer-profile-intg@flutterint.com"
+    AccountEmail              = "dtpl-core-customer-profile-intg@flutterint.com"
     AccountName               = "dtpl-core-customer-profile-intg"
     ManagedOrganizationalUnit = "DTPL (ou-t7v1-di0eztm2)"
     SSOUserEmail              = "dtpl-core-customer-profile-intg@flutterint.com"
