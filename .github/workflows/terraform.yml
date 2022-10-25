@@ -7,8 +7,11 @@ permissions:
 # Pipeline must run only changes/addition to terraform files and PR to main branch
 on:
   pull_request:
+    paths:
+      - "**.tf"
     branches:
       - main
+
 jobs:
   inform_about_tests:
     name: Conftest notification
@@ -45,15 +48,31 @@ jobs:
           wget -O ./hcl2json https://github.com/tmccombs/hcl2json/releases/download/v0.3.4/hcl2json_linux_amd64 -q
           chmod 755 ./hcl2json
 
-     
-       # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
-      - name: Setup Terraform
+      - name: Setup Python
+        run: |
+          pip install lxml==4.9.1 boto3==1.24.23
+
+      - name: Setup Go
+        id: setup_go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.18.4'
+
+      - name: Terraform setup
+        id: setup_terraform
         uses: hashicorp/setup-terraform@v1
         with:
-              cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-      - name: Terraform Init
-        run: terraform init
-        
+          terraform_version: 1.1.6
+          terraform_wrapper: false
+
+      - name: Configure AWS
+        id: configure_aws
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: "${{ secrets.AWS_AFT_OPA_ROLE }}"
+          role-duration-seconds: 900
+          aws-region: us-east-1
+
       - name: Get changed files
         id: changed_files
         uses: tj-actions/changed-files@v23
@@ -83,12 +102,94 @@ jobs:
           echo $REPORT
           echo "::set-output name=logfmt::$REPORT"
 
-    # Generates an execution plan for Terraform
-      - name: Terraform Plan
-        run: terraform plan -input=false
+      - name: Convert hcl2json and test with conftest
+        id: conv_test
+        continue-on-error: true
+        env:
+          CONFTESTLOG_FILE: conftest.log
+          CC_DATA_FILE: cost_center_data.json
+          SSOAA_DATA_FILE: ssoaa_data_file.json
+          OU_NAME_ID: ou_name_id.json
+        run: |
+          echo "-----" >> $CONFTESTLOG_FILE
+          for file in ${{ steps.changed_files.outputs.all_changed_files }}; do
+            echo "$file submited for testing"
+            echo "Testing file $file" >> $CONFTESTLOG_FILE
+            echo "Converting $file to json with hcl2json"
+            ./hcl2json $file > $file.json
+            echo "Generate SSOAA tag availability list"
+            python .github/scripts/check-ssoaa-availability.py $file.json > $SSOAA_DATA_FILE
+            cat $SSOAA_DATA_FILE
+            echo "Running conftest test --no-color --no-fail --all-namespaces --policy policies/ $file.json"
+            conftest test --no-color --no-fail --all-namespaces --data $CC_DATA_FILE --data $SSOAA_DATA_FILE --data $OU_NAME_ID --policy policies/ $file.json | tee -a $CONFTESTLOG_FILE
+            echo "-----" >> $CONFTESTLOG_FILE
+          done
+          RESULT="$(cat $CONFTESTLOG_FILE)"
+          echo "::set-output name=conftestlog::$RESULT"
+          echo "RESULT<<EOF" >> $GITHUB_ENV
+          echo "$RESULT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-      # On push to "main", build or change infrastructure according to Terraform configuration files
-      # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false
+      - name: Update PR with test results 
+        id: update_pr_results
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request' || always()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Rego testing')
+            })
+
+            const output = `#### Conftest Initialization ⚙️ \`${{ steps.setup_conftest.outcome }}\`
+            #### Terraform Format and Rego testing \`${{ steps.fmt.conclusion }}\`
+            <details><summary>Show Format</summary>
+
+            \`\`\`
+            ${{ steps.fmt.outputs.logfmt }}
+            \`\`\`
+
+            </details>
+
+
+            #### Conftest run 📖 \`${{ steps.conv_test.outcome }}\`
+            <details open><summary>Show OPA results</summary>
+            
+            \`\`\`
+            ${{ env.RESULT }}
+            \`\`\`
+            
+            </details>
+            
+            *You can see the complete command output [here](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})*
+            *Triggered by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`; 
+
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
+
+      - name: Exit with 1 if continue-on-error
+        id: exit_code
+        if: "contains(env.RESULT, 'FAIL - ')"
+        run: |
+          echo "There is an error in OPA tests"
+          echo "${{ env.RESULT }}"
+          exit 1
