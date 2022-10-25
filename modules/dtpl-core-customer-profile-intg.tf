@@ -12,12 +12,12 @@ module "dtpl-core-customer-profile-intg" {
 
   account_tags = {
     "OwnerName"   = "KaloyanKosev"
-    "Owner&&Email"  = "kaloyankoevpokerstarsint.com"
+    "OwneEmail"  = "kaloyankoevpokerstarsint.com"
     "Division"    = "ENT"
     "Environment" = "intg"
-    "CostC&&enter"  = "80716"
+    "CostCenter"  = "80716"
     "Project"     = "DTPL"
-    "JiraRequest" = "CCOE539"
+    "JiraRequest" = "CCOE&&539"
   }
 
   change_management_parameters = {
