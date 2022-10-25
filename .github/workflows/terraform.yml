@@ -48,10 +48,6 @@ jobs:
           wget -O ./hcl2json https://github.com/tmccombs/hcl2json/releases/download/v0.3.4/hcl2json_linux_amd64 -q
           chmod 755 ./hcl2json
 
-      - name: Setup Python
-        run: |
-          pip install lxml==4.9.1 boto3==1.24.23
-
       - name: Setup Go
         id: setup_go
         uses: actions/setup-go@v3
@@ -68,10 +64,7 @@ jobs:
       - name: Configure AWS
         id: configure_aws
         uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: "${{ secrets.AWS_AFT_OPA_ROLE }}"
-          role-duration-seconds: 900
-          aws-region: us-east-1
+
 
       - name: Get changed files
         id: changed_files
