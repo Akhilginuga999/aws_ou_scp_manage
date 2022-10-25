@@ -2,6 +2,14 @@ package main
 
 import future.keywords.in
 
+account_blocks[module_label] {
+  some module_label, i  
+  module := input.module[module_label][i]
+  startswith(
+    module.source,
+    "./modules/aft-account-request"
+  )
+}
 
 
 
