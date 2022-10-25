@@ -1,4 +1,4 @@
-/* 
+
 data "aws_organizations_organization" "root" {}
 resource "aws_organizations_organizational_unit" "Snowplow" {
   name      = "Snowplow"
@@ -22,4 +22,4 @@ CONTENT
 resource "aws_organizations_policy_attachment" "unit" {
   policy_id = aws_organizations_policy.Admin_policy.id
   target_id = aws_organizations_organizational_unit.Snowplow.id
-} */
+}
