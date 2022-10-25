@@ -26,7 +26,7 @@ module "dtpl-core-customer-profile-intg" {
   }
 
   change_management_parameters = {
-    change_requested_by = "Alexander Tsankov"
+    change_requested_by = "Alexander hhhbTsankov"
     change_reason       = "CCOE-539"
   }
 
