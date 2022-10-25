@@ -5,7 +5,7 @@ module "dtpl-core-customer-profile-intg" {
     AccountEmail              = "sre+dtpl-core-customer-profile-intg@flutterint.com"
     AccountName               = "dtpl-core-customer-profile-intg"
     ManagedOrganizationalUnit = "DTPL (ou-t7v1-di0eztm2)"
-    SSOUserEmail              = "sre+dtpl-core-customer-profile-intg@flutterint.com"
+    SSOUserEmail              = "dtpl-core-customer-profile-intg@flutterint.com"
     SSOUserFirstName          = "DTPL-Core-Customer"
     SSOUserLastName           = "Profile-intg"
   }
