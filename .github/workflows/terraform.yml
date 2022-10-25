@@ -65,7 +65,7 @@ jobs:
         id: configure_aws
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: "${{ secrets.AWS_ROOT_OIDC_ROLE }}"
+          role-to-assume: arn:aws:iam::705293405956:role/github_ci_role
           role-duration-seconds: 900
           aws-region: us-east-1
 
