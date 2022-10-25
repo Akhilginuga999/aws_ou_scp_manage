@@ -110,11 +110,8 @@ jobs:
             echo "Testing file $file" >> $CONFTESTLOG_FILE
             echo "Converting $file to json with hcl2json"
             ./hcl2json $file > $file.json
-            echo "Generate SSOAA tag availability list"
-            python .github/scripts/check-ssoaa-availability.py $file.json > $SSOAA_DATA_FILE
-            cat $SSOAA_DATA_FILE
             echo "Running conftest test --no-color --no-fail --all-namespaces --policy policies/ $file.json"
-            conftest test --no-color --no-fail --all-namespaces --data $CC_DATA_FILE --data $SSOAA_DATA_FILE --data $OU_NAME_ID --policy policies/ $file.json | tee -a $CONFTESTLOG_FILE
+            conftest test --no-color --no-fail --all-namespaces --policy policies/ $file.json | tee -a $CONFTESTLOG_FILE
             echo "-----" >> $CONFTESTLOG_FILE
           done
           RESULT="$(cat $CONFTESTLOG_FILE)"
