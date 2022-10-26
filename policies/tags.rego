@@ -55,5 +55,5 @@ deny[reason] {
        tags := account.account_tags[_] 
        r := "[^A-Za-z0-9 _.:=+@-]"
        regex.match(r, tags)
-  reason := "Not a valid tag value.the allowed spl characters are(_ . : / = + - @.)"
+  reason := "Not a valid tag value,only allowed spl characters are(_ . : / = + - @.)"
 }
