@@ -17,7 +17,7 @@ module "dtpl-core-customer-profile-intg" {
     "Environment" = "intg"
     "CostCenter"  = "80$$716"
     "Project"     = "DTPL"
-    "JiraRequest" = "CCOE539"
+    "JiraRequest" = "CCOE&&539"
   }
 
   change_management_parameters = {
