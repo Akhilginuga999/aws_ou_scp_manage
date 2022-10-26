@@ -12,7 +12,7 @@ module "dtpl-core-datalake-processing-dev" {
 
   account_tags = {
     "OwnerName"   = "DTPL Team"
-    "OwnerEmail"  = "da-platform-ser&&vices@pokerstarsint.com"
+    "OwnerEmail"  = "da-platform-services@pokerstarsint.com"
     "Division"    = "ENT"
     "Environment" = "Dev"
     "CostCenter"  = "80716"
