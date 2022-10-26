@@ -1,59 +1,185 @@
-name: 'Pull Request'
+name: "Run OPA with conftest"
 permissions:
-  id-token: write
-  contents: read
- 
-# The workflow should only trigger on pull requests to the main branch
+  id-token: write # required to use OIDC authentication
+  contents: read # required to check out the code from the repo
+  pull-requests: write # allow GH Action to write in the PR
+
+# Pipeline must run only changes/addition to terraform files and PR to main branch
 on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:
+
 jobs:
-
-  terraform:
-    name: 'Terraform'
-    runs-on: ubuntu-latest
-    environment: production
-
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
-    defaults:
-      run:
-        shell: bash
-
+  inform_about_tests:
+    name: Conftest notification
+    runs-on: ubuntu-22.04
     steps:
-    # Checkout the repository to the GitHub Actions runner
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Inform on OPA testing
+        id: inform_pr
+        uses: marocchino/sticky-pull-request-comment@v2.1.0
+        with:
+          header: Will Run OPA/Conftest
+          message: |
+            ***Running conftest test on ${{ github.sha }}***
+            ***Tests are located in /policy***
+            Results will display below momentarily...
+            If test pass merging will be allowed.
+            If they do not pass you will need to resolve the issue and commit it back.
+            Documentation: TBA
 
-    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
-      with:
-        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+  runs-conftest:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
-    - name: Terraform Init
-      run: terraform init
- 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-region: us-east-1
-        role-to-assume: "${{ secrets.AWS_ROOT_OIDC_ROLE }}"
-        
-        role-session-name: OIDCSession
+      - name: Setup Conftest
+        id: setup_conftest
+        uses: princespaghetti/setup-conftest@v1
+        with:
+          version: 0.32.x
 
-    # Checks that all Terraform configuration files adhere to a canonical format
-    - name: Terraform Format
-      run: terraform fmt -check
+      - name: Setup hcl2json
+        run: |
+          wget -O ./hcl2json https://github.com/tmccombs/hcl2json/releases/download/v0.3.4/hcl2json_linux_amd64 -q
+          chmod 755 ./hcl2json
 
-    # Generates an execution plan for Terraform
-    - name: Terraform Plan
-      run: terraform plan -input=false
+      - name: Setup Go
+        id: setup_go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.18.4'
 
-      # On push to "main", build or change infrastructure according to Terraform configuration files
-      # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
-    - name: Terraform Apply
-      if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
-      run: terraform apply -auto-approve -input=false
+      - name: Terraform setup
+        id: setup_terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.6
+          terraform_wrapper: false
+
+      #- name: Configure AWS
+        #id: configure_aws
+        #uses: aws-actions/configure-aws-credentials@v1
+        #with:
+          #role-to-assume: arn:aws:iam::705293405956:role/github_ci_role
+          #aws-region: us-east-1
+
+      - name: Get changed files
+        id: changed_files
+        uses: tj-actions/changed-files@v23
+        with:
+          files: |
+            **/*.tf
+          files_ignore: |
+            **/*.yml
+            **/*.yaml
+            **/*.md
+            examples/sandbox_account_01.tf
+
+      - name: Terraform Format
+        id: fmt
+        continue-on-error: true
+        run: |
+          for file in ${{ steps.changed_files.outputs.all_changed_files }}; do
+            terraform fmt -check -diff -no-color $file >> fmt.log
+          done
+          cat fmt.log
+          ls -la fmt.log
+          if [[ ! -s fmt.log ]]; then
+            REPORT="Format is correct"
+          else
+            REPORT="$(cat fmt.log)"
+          fi
+          echo $REPORT
+          echo "::set-output name=logfmt::$REPORT"
+
+      - name: Convert hcl2json and test with conftest
+        id: conv_test
+        continue-on-error: true
+        env:
+          CONFTESTLOG_FILE: conftest.log
+          CC_DATA_FILE: cost_center_data.json
+          SSOAA_DATA_FILE: ssoaa_data_file.json
+          OU_NAME_ID: ou_name_id.json
+        run: |
+          echo "-----" >> $CONFTESTLOG_FILE
+          for file in ${{ steps.changed_files.outputs.all_changed_files }}; do
+            echo "$file submited for testing"
+            echo "Testing file $file" >> $CONFTESTLOG_FILE
+            echo "Converting $file to json with hcl2json"
+            ./hcl2json $file > $file.json
+            echo "Running conftest test --no-color --no-fail --all-namespaces --policy policies/ $file.json"
+            conftest test --no-color --no-fail --all-namespaces --policy policies/ $file.json | tee -a $CONFTESTLOG_FILE
+            echo "-----" >> $CONFTESTLOG_FILE
+          done
+          RESULT="$(cat $CONFTESTLOG_FILE)"
+          echo "::set-output name=conftestlog::$RESULT"
+          echo "RESULT<<EOF" >> $GITHUB_ENV
+          echo "$RESULT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Update PR with test results 
+        id: update_pr_results
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request' || always()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Rego testing')
+            })
+
+            const output = `#### Conftest Initialization ⚙️ \`${{ steps.setup_conftest.outcome }}\`
+            #### Terraform Format and Rego testing \`${{ steps.fmt.conclusion }}\`
+            <details><summary>Show Format</summary>
+
+            \`\`\`
+            ${{ steps.fmt.outputs.logfmt }}
+            \`\`\`
+
+            </details>
+
+
+            #### Conftest run 📖 \`${{ steps.conv_test.outcome }}\`
+            <details open><summary>Show OPA results</summary>
+            
+            \`\`\`
+            ${{ env.RESULT }}
+            \`\`\`
+            
+            </details>
+            
+            *You can see the complete command output [here](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})*
+            *Triggered by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`; 
+
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
+
+      - name: Exit with 1 if continue-on-error
+        id: exit_code
+        if: "contains(env.RESULT, 'FAIL - ')"
+        run: |
+          echo "There is an error in OPA tests"
+          echo "${{ env.RESULT }}"
+          exit 1
