@@ -15,7 +15,7 @@ module "dtpl-core-customer-profile-intg" {
     "OwneEmail"  = "kaloyankoevpokerstarsint.com"
     "Division"    = "ENT"
     "Environment" = "intg"
-    "CostCenter"  = "80$$716"
+    "CostCenter"  = "80716"
     "Project"     = "DTPL"
     "JiraRequ&&est" = "CCOE539"
   }
