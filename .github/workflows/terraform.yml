@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Inform on OPA testing
         id: inform_pr
-        uses: marocchino/sticky-pull-request-comment@v2.1.0
+        uses: marocchino/sticky-pull-request-comment@v2.3.0
         with:
           header: Will Run OPA/Conftest
           message: |
