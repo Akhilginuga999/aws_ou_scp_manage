@@ -12,7 +12,7 @@ module "dtpl-core-customer-profile-intg" {
 
   account_tags = {
     "OwnerName"   = "KaloyanKosev"
-    "OwneEmail"  = "kaloyankoevpokerstarsint.com"
+    #"OwneEmail"  = "kaloyankoevpokerstarsint.com"
     "Division"    = "ENT"
     "Environment" = "intg"
     "CostCenter"  = "80716"
@@ -21,7 +21,7 @@ module "dtpl-core-customer-profile-intg" {
   }
 
   change_management_parameters = {
-    change_requested_by = "Alexander hhhbTsankov"
+    change_requested_by = "Alexander Tsankov"
     change_reason       = "CCOE-539"
   }
 
