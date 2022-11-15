@@ -93,7 +93,7 @@ jobs:
             REPORT="$(cat fmt.log)"
           fi
           echo $REPORT
-          echo "::set-output name=logfmt::$REPORT"
+          echo "::logfmt_single_line=Some single line output data name=logfmt::$REPORT"
 
       - name: Convert hcl2json and test with conftest
         id: conv_test
