@@ -68,7 +68,7 @@ jobs:
 
       - name: Get changed files
         id: changed_files
-        uses: tj-actions/changed-files@v23
+        uses: tj-actions/changed-files@v34
         with:
           files: |
             **/*.tf
