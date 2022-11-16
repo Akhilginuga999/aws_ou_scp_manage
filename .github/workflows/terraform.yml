@@ -93,7 +93,7 @@ jobs:
             REPORT="$(cat fmt.log)"
           fi
           echo $REPORT
-          echo "logfmt_single_line=Some single line output data" >> $GITHUB_ENV
+          echo "logfmt=$REPORT" >> $GITHUB_ENV
 
       - name: Convert hcl2json and test with conftest
         id: conv_test
@@ -115,7 +115,7 @@ jobs:
             echo "-----" >> $CONFTESTLOG_FILE
           done
           RESULT="$(cat $CONFTESTLOG_FILE)"
-          echo "logfmt_single_line=Some single line output data" >> $GITHUB_ENV
+          echo "confestlog=$RESULT" >> $GITHUB_ENV
           echo "RESULT<<EOF" >> $GITHUB_ENV
           echo "$RESULT" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV

@@ -17,7 +17,7 @@ module "dtpl-core-datalake-processing-dev" {
     "Environment" = "Dev"
     "CostCenter"  = "80716"
     "Project"     = "DTPL"
-    "JiraRequest" = "CCOE-531"
+    "JiraRequest" = "CCOE-53781"
 
     "SSOAA:tsg_aws_dtpl_platform_services_admins" = "AWSAdministratorAccess"
     "SSOAA:tsg_aws_DTPL_DevOps"                   = "AWSAdministratorAccess"
