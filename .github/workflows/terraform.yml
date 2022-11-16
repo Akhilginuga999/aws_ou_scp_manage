@@ -115,6 +115,9 @@ jobs:
             echo "-----" >> $CONFTESTLOG_FILE
           done
           RESULT="$(cat $CONFTESTLOG_FILE)"
+          echo "confestlog<<EOF" >> $GITHUB_OUTPUT
+          echo "$RESULT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
           echo "RESULT<<EOF" >> $GITHUB_ENV
           echo "$RESULT" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
